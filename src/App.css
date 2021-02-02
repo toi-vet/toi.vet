@@ -3,8 +3,8 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  align-items: flex-start;
   justify-content: center;
-  align-items: center;
   color: black;
   background: #f1ea36;
   padding: 1rem;
@@ -75,6 +75,10 @@ table {
 }
 
 @media only screen and (min-width: 800px) {
+  body {
+    align-items: center;
+    justify-content: center;
+  }
   h1 {
     font-size: 4rem;
     line-height: 4rem;
