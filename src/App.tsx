@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { useQuery, gql } from "@apollo/client";
-import history from 'history/browser';
+import history from "history/browser";
 
 interface ToiVars {
   symbol: string;
@@ -53,10 +53,15 @@ function App() {
   });
 
   useEffect(() => {
-    if (!loading && data?.getQuoteBySymbol) {
-      document.title = `TOI | ${data?.getQuoteBySymbol.price} CAD`;
+    if (!loading && data?.getQuoteBySymbol && cadRate) {
+      document.title = `TOI | ${data?.getQuoteBySymbol.price.toLocaleString()} CAD | € ${(
+        data?.getQuoteBySymbol.price * cadRate
+      ).toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      })}`;
     }
-  }, [data, loading]);
+  }, [data, loading, cadRate]);
 
   useEffect(() => {
     async function fetchRates() {
