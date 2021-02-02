@@ -95,24 +95,36 @@ function App() {
               </thead>
               <tbody>
                 <tr>
-                  <td>{data?.getQuoteBySymbol.price} CAD</td>
-                  <td>{data?.getQuoteBySymbol.priceChange} CAD</td>
-                  <td>{data?.getQuoteBySymbol.percentChange}%</td>
+                  <td>{data?.getQuoteBySymbol.price.toLocaleString()} CAD</td>
+                  <td>
+                    {data?.getQuoteBySymbol.priceChange.toLocaleString()} CAD
+                  </td>
+                  <td>
+                    {data?.getQuoteBySymbol.percentChange.toLocaleString()}%
+                  </td>
                 </tr>
                 <tr>
                   <td>
                     €&nbsp;
-                    {(data?.getQuoteBySymbol.price! * (cadRate ?? NaN)).toFixed(
-                      2
-                    )}
+                    {(
+                      data?.getQuoteBySymbol.price! * (cadRate ?? NaN)
+                    ).toLocaleString(undefined, {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 2,
+                    })}
                   </td>
                   <td>
                     €&nbsp;
                     {(
                       data?.getQuoteBySymbol.priceChange! * (cadRate ?? NaN)
-                    ).toFixed(2)}
+                    ).toLocaleString(undefined, {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 2,
+                    })}
                   </td>
-                  <td>{data?.getQuoteBySymbol.percentChange}%</td>
+                  <td>
+                    {data?.getQuoteBySymbol.percentChange.toLocaleString()}%
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -130,11 +142,22 @@ function App() {
               </div>
               {data?.getQuoteBySymbol.price && stocks ? (
                 <div>
-                  {(stocks * data?.getQuoteBySymbol.price).toFixed(2)} CAD /
-                  €&nbsp;
-                  {(stocks * data?.getQuoteBySymbol.price * cadRate!).toFixed(
-                    2
-                  )}
+                  {(stocks * data?.getQuoteBySymbol.price).toLocaleString(
+                    undefined,
+                    {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 2,
+                    }
+                  )}{" "}
+                  CAD / €&nbsp;
+                  {(
+                    stocks *
+                    data?.getQuoteBySymbol.price *
+                    cadRate!
+                  ).toLocaleString(undefined, {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  })}
                 </div>
               ) : (
                 <></>
@@ -142,7 +165,17 @@ function App() {
             </div>
 
             <div className="exchange">
-              {cadRate ? <span>1 CAD ~= €{cadRate!.toFixed(2)}</span> : <></>}
+              {cadRate ? (
+                <span>
+                  1 CAD ~= €
+                  {cadRate!.toLocaleString(undefined, {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              ) : (
+                <></>
+              )}
             </div>
           </main>
         </section>
