@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { useQuery, gql } from "@apollo/client";
+import history from 'history/browser';
 
 interface ToiVars {
   symbol: string;
@@ -36,7 +37,11 @@ const GET_TOI = gql`
 `;
 
 function App() {
-  const [stocks, setStocks] = useState<number | undefined>(undefined);
+  const urlParams = new URLSearchParams(window.location.search).get("stocks");
+  const stonksNr = Number(urlParams);
+  const stonks = !isNaN(stonksNr) ? stonksNr : undefined;
+
+  const [stocks, setStocks] = useState<number | undefined>(stonks);
   const [rates, setRates] = useState<ExchangeRates | null>(null);
   const [cadRate, setCadRate] = useState<number | null>(null);
   const { loading, data } = useQuery<ToiData, ToiVars>(GET_TOI, {
@@ -71,6 +76,10 @@ function App() {
   function stockChanged(ev: React.ChangeEvent<HTMLInputElement>) {
     const amount = parseFloat(ev.target.value);
     if (!isNaN(amount)) {
+      history.push({
+        pathname: "/",
+        search: `?stocks=${amount}`,
+      });
       setStocks(parseFloat(ev.target.value));
     } else {
       setStocks(undefined);
