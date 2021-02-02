@@ -36,6 +36,7 @@ const GET_TOI = gql`
 `;
 
 function App() {
+  const [stocks, setStocks] = useState<number | undefined>(undefined);
   const [rates, setRates] = useState<ExchangeRates | null>(null);
   const [cadRate, setCadRate] = useState<number | null>(null);
   const { loading, data } = useQuery<ToiData, ToiVars>(GET_TOI, {
@@ -66,6 +67,16 @@ function App() {
       setCadRate(1 / rates?.rates["CAD"]);
     }
   }, [rates]);
+
+  function stockChanged(ev: React.ChangeEvent<HTMLInputElement>) {
+    const amount = parseFloat(ev.target.value);
+    if (!isNaN(amount)) {
+      setStocks(parseFloat(ev.target.value));
+    } else {
+      setStocks(undefined);
+    }
+  }
+
   return (
     <div className="App">
       {loading ? (
@@ -90,13 +101,13 @@ function App() {
                 </tr>
                 <tr>
                   <td>
-                    €
+                    €&nbsp;
                     {(data?.getQuoteBySymbol.price! * (cadRate ?? NaN)).toFixed(
                       2
                     )}
                   </td>
                   <td>
-                    €
+                    €&nbsp;
                     {(
                       data?.getQuoteBySymbol.priceChange! * (cadRate ?? NaN)
                     ).toFixed(2)}
@@ -105,7 +116,34 @@ function App() {
                 </tr>
               </tbody>
             </table>
-            {cadRate ? <span>1 CAD ~= €{cadRate!.toFixed(2)}</span> : <></>}
+
+            <div>
+              <h2>Can I retire?</h2>
+              <div className="input-group">
+                <label htmlFor="stocks">number of stocks:</label>
+                <input
+                  id="stocks"
+                  type="number"
+                  value={stocks}
+                  onChange={stockChanged}
+                ></input>
+              </div>
+              {data?.getQuoteBySymbol.price && stocks ? (
+                <div>
+                  {(stocks * data?.getQuoteBySymbol.price).toFixed(2)} CAD /
+                  €&nbsp;
+                  {(stocks * data?.getQuoteBySymbol.price * cadRate!).toFixed(
+                    2
+                  )}
+                </div>
+              ) : (
+                <></>
+              )}
+            </div>
+
+            <div className="exchange">
+              {cadRate ? <span>1 CAD ~= €{cadRate!.toFixed(2)}</span> : <></>}
+            </div>
           </main>
         </section>
       )}

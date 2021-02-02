@@ -8,8 +8,21 @@ body {
   color: black;
   background: #f1ea36;
   padding: 1rem;
+  font-size: 1.1rem;
+  line-height: 1.7rem;
+
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+input[type=number] {
+  background: transparent;
+  font-size: 1.1rem;
+  line-height: 1.1rem;
+  border: none;
+  border-bottom: 2px solid black;
+  appearance: textfield;
+  margin-left: 2ch;
 }
 
 span {
@@ -25,17 +38,13 @@ h1 {
 }
 
 h2 {
+  text-align: center;
   font-size: 1.4rem;
 }
 
 th {
   text-align: left;
   padding: 0 4ch 0 0;
-}
-
-div {
-  font-size: 1.1rem;
-  line-height: 1.7rem;
 }
 
 main {
@@ -54,6 +63,17 @@ table {
   justify-content: space-between;
 }
 
+.exchange {
+  margin-top: 2rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem 0;
+}
+
 @media only screen and (min-width: 800px) {
   h1 {
     font-size: 4rem;
@@ -68,4 +88,14 @@ table {
     font-size: 1.6rem;
     line-height: 2.5rem;
   }
+
+  th {
+    min-width: 10ch;
+  }
+
+  .input-group {
+    flex-direction: row;
+    margin: 0;
+  }
+ 
 }
