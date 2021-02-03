@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { useQuery, gql } from "@apollo/client";
 import history from "history/browser";
@@ -37,10 +37,28 @@ const GET_TOI = gql`
 `;
 
 function App() {
-  const urlParams = new URLSearchParams(window.location.search).get("stocks");
-  const stonksNr = Number(urlParams);
+  const themes = useMemo(
+    () => [
+      { background: "yellow", foreground: "dark" },
+      { background: "pink", foreground: "light" },
+      { background: "blue", foreground: "light" },
+    ],
+    []
+  );
+  const urlParams = new URLSearchParams(window.location.search);
+  const stonksParam = urlParams.get("stocks");
+  const stonksNr = Number(stonksParam);
   const stonks = !isNaN(stonksNr) ? stonksNr : undefined;
+  const themeParam = urlParams.get("theme");
+  const themeNr = Number(themeParam);
 
+  const theme = !isNaN(themeNr) && themeNr < themes.length ? themeNr : 0;
+
+  const [currentTheme, setTheme] = useState<number>(theme);
+  const [nextTheme, setNextTheme] = useState<number>(
+    (theme + 1) % themes.length
+  );
+  const [nextThemeBackground, setNextThemeBackground] = useState<string>("");
   const [stocks, setStocks] = useState<number | undefined>(stonks);
   const [rates, setRates] = useState<ExchangeRates | null>(null);
   const [cadRate, setCadRate] = useState<number | null>(null);
@@ -73,6 +91,22 @@ function App() {
   }, []);
 
   useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--foreground",
+      `var(--${themes[currentTheme].foreground})`
+    );
+    document.documentElement.style.setProperty(
+      "--background",
+      `var(--${themes[currentTheme].background})`
+    );
+    setNextTheme((currentTheme + 1) % themes.length);
+  }, [currentTheme, themes, setNextTheme]);
+
+  useEffect(() => {
+    setNextThemeBackground(`var(--${themes[nextTheme].background})`);
+  }, [nextTheme, setNextThemeBackground, themes]);
+
+  useEffect(() => {
     if (rates?.rates["CAD"] != null) {
       setCadRate(1 / rates?.rates["CAD"]);
     }
@@ -81,21 +115,33 @@ function App() {
   function stockChanged(ev: React.ChangeEvent<HTMLInputElement>) {
     const amount = parseFloat(ev.target.value);
     if (!isNaN(amount)) {
+      setStocks(parseFloat(ev.target.value));
       history.push({
         pathname: "/",
-        search: `?stocks=${amount}`,
+        search: `?stocks=${stocks}&theme=${theme}`,
       });
-      setStocks(parseFloat(ev.target.value));
     } else {
       setStocks(undefined);
     }
+  }
+
+  function cycleTheme() {
+    const themeNr = (currentTheme + 1) % themes.length;
+    setTheme(themeNr);
+    history.push({
+      pathname: "/",
+      search: `?stocks=${stocks}&theme=${themeNr}`,
+    });
   }
 
   async function share() {
     const ele = document.getElementById("stock")!;
     const contrib = document.createElement("div");
     contrib.textContent = "https://toi.vet";
-    contrib.setAttribute("style", "width: 100%; text-align: center; font-weight: bold");
+    contrib.setAttribute(
+      "style",
+      "width: 100%; text-align: center; font-weight: bold"
+    );
     ele.appendChild(contrib);
     const canvas = await html2canvas(ele);
     contrib.remove();
@@ -122,6 +168,13 @@ function App() {
       ) : (
         <section id="topistonk">
           <main>
+            <button
+              id="theme"
+              onClick={cycleTheme}
+              style={{
+                background: nextThemeBackground,
+              }}
+            ></button>
             <button id="share" onClick={share}>
               share
             </button>

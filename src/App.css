@@ -1,3 +1,13 @@
+:root {
+  --yellow: #f7e700;
+  --pink: #e40078;
+  --blue: #164193;
+  --dark: black;
+  --light: white;
+  --background: var(--yellow);
+  --foreground: var(--dark);
+}
+
 html {
   box-sizing: border-box;
 }
@@ -11,8 +21,8 @@ html,
 body {
   padding: 0;
   margin: 0;
-  background: #f1ea36;
-  color: black;
+  background: var(--background);
+  color: var(--foreground);
 }
 
 body {
@@ -34,9 +44,10 @@ input[type="number"] {
   background: transparent;
   font-size: 1.1rem;
   border: none;
-  border-bottom: 2px solid black;
+  border-bottom: 2px solid var(--foreground);
   appearance: textfield;
   line-height: 2.5rem;
+  color: var(--foreground);
 }
 
 label {
@@ -126,21 +137,31 @@ table {
 
 #stock {
   padding: 2rem;
-  background: #f1ea36;
+  background: var(--background);
 }
 
 #share {
   background: transparent;
-  border: 2px solid black;
+  color: var(--foreground);
+  border: 2px solid var(--foreground);
   padding: 0.75rem;
   font-weight: bold;
   font-size: 1.1rem;
   cursor: pointer;
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
 }
 
+#theme {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--foreground);
+  border-radius: 50%;
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+}
 
 @media only screen and (min-width: 800px) {
   body {
