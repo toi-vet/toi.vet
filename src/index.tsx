@@ -6,7 +6,7 @@ import reportWebVitals from "./reportWebVitals";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 
 const client = new ApolloClient({
-  uri: "https://toi-cors.rikharink.workers.dev?https://app-money.tmx.com/graphql",
+  uri: "https://toi-cors.herokuapp.com/https://app-money.tmx.com/graphql",
   cache: new InMemoryCache(),
 });
 

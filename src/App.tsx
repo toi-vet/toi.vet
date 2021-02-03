@@ -103,8 +103,8 @@ function App() {
               <thead>
                 <tr>
                   <th>price</th>
-                  <th>change</th>
-                  <th>change %</th>
+                  <th className="tooltip" data-text="absolute change since last open">change</th>
+                  <th className="tooltip" data-text="percentage change since last open">change %</th>
                 </tr>
               </thead>
               <tbody>

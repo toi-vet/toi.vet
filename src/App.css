@@ -15,7 +15,7 @@ body {
     Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
-input[type=number] {
+input[type="number"] {
   background: transparent;
   font-size: 1.1rem;
   line-height: 1.1rem;
@@ -74,6 +74,38 @@ table {
   margin: 1rem 0;
 }
 
+.tooltip {
+  position: relative; /* making the .tooltip span a container for the tooltip text */
+}
+
+.tooltip:hover:before {
+  display:block;
+}
+
+.tooltip:before {
+  content: attr(data-text); /* here's the magic */
+  position: absolute;
+  font-size: 0.8rem;
+  line-height: 1rem;
+  z-index: 1000;
+  /* vertically center */
+  top: 50%;
+  transform: translateY(-50%);
+
+  /* move to right */
+  left: 60%;
+
+  /* basic styles */
+  width: 200px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #000;
+  color: #fff;
+  text-align: center;
+
+  display: none; /* hide by default */
+}
+
 @media only screen and (min-width: 800px) {
   body {
     align-items: center;
@@ -101,5 +133,4 @@ table {
     flex-direction: row;
     margin: 0;
   }
- 
 }
