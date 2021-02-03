@@ -7,7 +7,7 @@ body {
   justify-content: center;
   color: black;
   background: #f1ea36;
-  padding: 1rem;
+  padding-top: 1rem;
   font-size: 1.1rem;
   line-height: 1.7rem;
 
@@ -22,7 +22,6 @@ input[type="number"] {
   border: none;
   border-bottom: 2px solid black;
   appearance: textfield;
-  margin-left: 2ch;
 }
 
 span {
@@ -79,7 +78,7 @@ table {
 }
 
 .tooltip:hover:before {
-  display:block;
+  display: block;
 }
 
 .tooltip:before {
@@ -110,7 +109,9 @@ table {
   body {
     align-items: center;
     justify-content: center;
+    padding-top: 0;
   }
+  
   h1 {
     font-size: 4rem;
     line-height: 4rem;
@@ -132,5 +133,9 @@ table {
   .input-group {
     flex-direction: row;
     margin: 0;
+  }
+
+  input[type="number"] {
+    margin-left: 2ch;
   }
 }
