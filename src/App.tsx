@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import { useQuery, gql } from "@apollo/client";
 import history from "history/browser";
-
+import html2canvas from "html2canvas";
 interface ToiVars {
   symbol: string;
   locale: string;
@@ -91,6 +91,30 @@ function App() {
     }
   }
 
+  async function share() {
+    const ele = document.getElementById("stock")!;
+    const contrib = document.createElement("div");
+    contrib.textContent = "https://toi.vet";
+    contrib.setAttribute("style", "width: 100%; text-align: center; font-weight: bold");
+    ele.appendChild(contrib);
+    const canvas = await html2canvas(ele);
+    contrib.remove();
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const now = new Date().toISOString();
+        a.setAttribute("style", "display: none");
+        a.href = url;
+        a.download = `TOI-${now}.png`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      }
+    });
+  }
+
   return (
     <div className="App">
       {loading ? (
@@ -98,52 +122,68 @@ function App() {
       ) : (
         <section id="topistonk">
           <main>
-            <h1>{data?.getQuoteBySymbol.symbol}</h1>
-            <table>
-              <thead>
-                <tr>
-                  <th>price</th>
-                  <th className="tooltip" data-text="absolute change since last open">change</th>
-                  <th className="tooltip" data-text="percentage change since last open">change %</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{data?.getQuoteBySymbol.price.toLocaleString()} CAD</td>
-                  <td>
-                    {data?.getQuoteBySymbol.priceChange.toLocaleString()} CAD
-                  </td>
-                  <td>
-                    {data?.getQuoteBySymbol.percentChange.toLocaleString()}%
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    €&nbsp;
-                    {(
-                      data?.getQuoteBySymbol.price! * (cadRate ?? NaN)
-                    ).toLocaleString(undefined, {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 2,
-                    })}
-                  </td>
-                  <td>
-                    €&nbsp;
-                    {(
-                      data?.getQuoteBySymbol.priceChange! * (cadRate ?? NaN)
-                    ).toLocaleString(undefined, {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 2,
-                    })}
-                  </td>
-                  <td>
-                    {data?.getQuoteBySymbol.percentChange.toLocaleString()}%
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div>
+            <button id="share" onClick={share}>
+              share
+            </button>
+            <div id="stock">
+              <div>
+                <h1>{data?.getQuoteBySymbol.symbol}</h1>
+              </div>
+              <table id="data">
+                <thead>
+                  <tr>
+                    <th>price</th>
+                    <th
+                      className="tooltip"
+                      data-text="absolute change since last open"
+                    >
+                      change
+                    </th>
+                    <th
+                      className="tooltip"
+                      data-text="percentage change since last open"
+                    >
+                      change %
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{data?.getQuoteBySymbol.price.toLocaleString()} CAD</td>
+                    <td>
+                      {data?.getQuoteBySymbol.priceChange.toLocaleString()} CAD
+                    </td>
+                    <td>
+                      {data?.getQuoteBySymbol.percentChange.toLocaleString()}%
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      €&nbsp;
+                      {(
+                        data?.getQuoteBySymbol.price! * (cadRate ?? NaN)
+                      ).toLocaleString(undefined, {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2,
+                      })}
+                    </td>
+                    <td>
+                      €&nbsp;
+                      {(
+                        data?.getQuoteBySymbol.priceChange! * (cadRate ?? NaN)
+                      ).toLocaleString(undefined, {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2,
+                      })}
+                    </td>
+                    <td>
+                      {data?.getQuoteBySymbol.percentChange.toLocaleString()}%
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="calculator">
               <h2>Can I retire?</h2>
               <div className="input-group">
                 <label htmlFor="stocks">number of stocks:</label>
@@ -178,7 +218,7 @@ function App() {
               )}
             </div>
 
-            <div className="exchange">
+            <div id="exchange">
               {cadRate ? (
                 <span>
                   1 CAD ~= €

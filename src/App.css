@@ -11,6 +11,8 @@ html,
 body {
   padding: 0;
   margin: 0;
+  background: #f1ea36;
+  color: black;
 }
 
 body {
@@ -20,8 +22,6 @@ body {
   overflow: hidden;
   align-items: flex-start;
   justify-content: center;
-  color: black;
-  background: #f1ea36;
   padding-top: 1rem;
   font-size: 1.1rem;
   line-height: 1.7rem;
@@ -81,7 +81,7 @@ table {
   justify-content: space-between;
 }
 
-.exchange {
+#exchange {
   margin-top: 2rem;
 }
 
@@ -123,6 +123,24 @@ table {
 
   display: none; /* hide by default */
 }
+
+#stock {
+  padding: 2rem;
+  background: #f1ea36;
+}
+
+#share {
+  background: transparent;
+  border: 2px solid black;
+  padding: 0.75rem;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
 
 @media only screen and (min-width: 800px) {
   body {
