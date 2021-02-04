@@ -3,6 +3,11 @@ import "./App.css";
 import { useQuery, gql } from "@apollo/client";
 import history from "history/browser";
 import html2canvas from "html2canvas";
+import {
+  Sparklines,
+  SparklinesLine,
+  SparklinesSpots,
+} from "react-sparklines-typescript";
 interface ToiVars {
   symbol: string;
   locale: string;
@@ -12,10 +17,29 @@ interface ToiData {
   getQuoteBySymbol: {
     symbol: string;
     name: string;
+    openPrice: number;
     price: number;
     priceChange: number;
     percentChange: number;
   };
+}
+
+interface GraphData {
+  getTimeSeriesData: [
+    {
+      dateTime: string;
+      open: number;
+    }
+  ];
+}
+interface GraphVars {
+  symbol: string;
+  freq?: string;
+  interval?: number;
+  start?: string;
+  end?: string;
+  startDateTime?: number | null;
+  endDateTime?: number | null;
 }
 
 type Rate = { [key: string]: number };
@@ -29,9 +53,35 @@ const GET_TOI = gql`
   query getQuoteBySymbol($symbol: String, $locale: String) {
     getQuoteBySymbol(symbol: $symbol, locale: $locale) {
       symbol
+      openPrice
       price
       priceChange
       percentChange
+    }
+  }
+`;
+
+const GET_TIMESERIES = gql`
+  query getTimeSeriesData(
+    $symbol: String!
+    $freq: String
+    $interval: Int
+    $start: String
+    $end: String
+    $startDateTime: Int
+    $endDateTime: Int
+  ) {
+    getTimeSeriesData(
+      symbol: $symbol
+      freq: $freq
+      interval: $interval
+      start: $start
+      end: $end
+      startDateTime: $startDateTime
+      endDateTime: $endDateTime
+    ) {
+      dateTime
+      open
     }
   }
 `;
@@ -45,6 +95,7 @@ function App() {
     ],
     []
   );
+
   const urlParams = new URLSearchParams(window.location.search);
   const stonksParam = urlParams.get("stocks");
   const stonksNr = Number(stonksParam);
@@ -58,10 +109,40 @@ function App() {
   const [nextTheme, setNextTheme] = useState<number>(
     (theme + 1) % themes.length
   );
+
   const [nextThemeBackground, setNextThemeBackground] = useState<string>("");
   const [stocks, setStocks] = useState<number | undefined>(stonks);
   const [rates, setRates] = useState<ExchangeRates | null>(null);
   const [cadRate, setCadRate] = useState<number | null>(null);
+  const [sparkData, setSparkData] = useState<number[] | null>(null);
+  const [discoMode, setDiscoMode] = useState<boolean>(false);
+
+  const date = new Date().getDate();
+  const startDate = useMemo(() => {
+    const today = new Date();
+    today.setDate(date - 5);
+    return Math.floor(today.getTime() / 1000);
+  }, [date]);
+
+  function cycleTheme() {
+    const themeNr = (currentTheme + 1) % themes.length;
+    setTheme(themeNr);
+    history.push({
+      pathname: "/",
+      search: `?stocks=${stocks}&theme=${themeNr}`,
+    });
+  }
+
+  const { data: graphData } = useQuery<GraphData, GraphVars>(GET_TIMESERIES, {
+    variables: {
+      symbol: "TOI",
+      interval: 5,
+      startDateTime: startDate,
+      endDateTime: null,
+    },
+    pollInterval: 300000,
+  });
+
   const { loading, data } = useQuery<ToiData, ToiVars>(GET_TOI, {
     variables: {
       symbol: "TOI",
@@ -71,13 +152,32 @@ function App() {
   });
 
   useEffect(() => {
+    if (graphData) {
+      const min = new Date();
+      min.setDate(min.getDate() - 1);
+      let data = graphData.getTimeSeriesData
+        .filter((d) => new Date(d.dateTime) >= min)
+        .filter((d) => new Date(d.dateTime) >= min)
+        .reverse()
+        .map((d) => d.open);
+      setSparkData(data);
+    }
+  }, [graphData]);
+
+  useEffect(() => {
     if (!loading && data?.getQuoteBySymbol && cadRate) {
-      document.title = `TOI | ${data?.getQuoteBySymbol.price.toLocaleString()} CAD | € ${(
-        data?.getQuoteBySymbol.price * cadRate
-      ).toLocaleString(undefined, {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      })}`;
+      document.title = `TOI | ${data?.getQuoteBySymbol.price.toLocaleString(
+        undefined,
+        {
+          minimumFractionDigits: 2,
+        }
+      )} CAD | € ${(data?.getQuoteBySymbol.price * cadRate).toLocaleString(
+        undefined,
+        {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }
+      )}`;
     }
   }, [data, loading, cadRate]);
 
@@ -100,7 +200,7 @@ function App() {
       `var(--${themes[currentTheme].background})`
     );
     setNextTheme((currentTheme + 1) % themes.length);
-  }, [currentTheme, themes, setNextTheme]);
+  }, [currentTheme, themes]);
 
   useEffect(() => {
     setNextThemeBackground(`var(--${themes[nextTheme].background})`);
@@ -111,6 +211,16 @@ function App() {
       setCadRate(1 / rates?.rates["CAD"]);
     }
   }, [rates]);
+
+  useEffect(() => {
+    let intervalId: number;
+    if (discoMode) {
+      intervalId = window.setInterval(() => {
+        setTheme((currentTheme + 1) % themes.length);
+      }, 500);
+    }
+    return () => clearInterval(intervalId);
+  }, [discoMode, currentTheme, themes.length]);
 
   function stockChanged(ev: React.ChangeEvent<HTMLInputElement>) {
     const amount = parseFloat(ev.target.value);
@@ -125,13 +235,10 @@ function App() {
     }
   }
 
-  function cycleTheme() {
-    const themeNr = (currentTheme + 1) % themes.length;
-    setTheme(themeNr);
-    history.push({
-      pathname: "/",
-      search: `?stocks=${stocks}&theme=${themeNr}`,
-    });
+  function secretHandler(event: React.MouseEvent) {
+    if(event.button === 1){
+      setDiscoMode(!discoMode);
+    }
   }
 
   async function share() {
@@ -143,7 +250,9 @@ function App() {
       "width: 100%; text-align: center; font-weight: bold"
     );
     ele.appendChild(contrib);
+    ele.setAttribute("style", "transition: none;");
     const canvas = await html2canvas(ele);
+    ele.removeAttribute("style");
     contrib.remove();
     canvas.toBlob((blob) => {
       if (blob) {
@@ -168,16 +277,6 @@ function App() {
       ) : (
         <section id="topistonk">
           <main>
-            <button
-              id="theme"
-              onClick={cycleTheme}
-              style={{
-                background: nextThemeBackground,
-              }}
-            ></button>
-            <button id="share" onClick={share}>
-              share
-            </button>
             <div id="stock">
               <div>
                 <h1>{data?.getQuoteBySymbol.symbol}</h1>
@@ -202,12 +301,29 @@ function App() {
                 </thead>
                 <tbody>
                   <tr>
-                    <td>{data?.getQuoteBySymbol.price.toLocaleString()} CAD</td>
                     <td>
-                      {data?.getQuoteBySymbol.priceChange.toLocaleString()} CAD
+                      {data?.getQuoteBySymbol.price.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}{" "}
+                      CAD
                     </td>
                     <td>
-                      {data?.getQuoteBySymbol.percentChange.toLocaleString()}%
+                      {data?.getQuoteBySymbol.priceChange.toLocaleString(
+                        undefined,
+                        {
+                          minimumFractionDigits: 2,
+                        }
+                      )}{" "}
+                      CAD
+                    </td>
+                    <td>
+                      {data?.getQuoteBySymbol.percentChange.toLocaleString(
+                        undefined,
+                        {
+                          minimumFractionDigits: 2,
+                        }
+                      )}
+                      %
                     </td>
                   </tr>
                   <tr>
@@ -216,7 +332,7 @@ function App() {
                       {(
                         data?.getQuoteBySymbol.price! * (cadRate ?? NaN)
                       ).toLocaleString(undefined, {
-                        minimumFractionDigits: 0,
+                        minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
                     </td>
@@ -225,7 +341,7 @@ function App() {
                       {(
                         data?.getQuoteBySymbol.priceChange! * (cadRate ?? NaN)
                       ).toLocaleString(undefined, {
-                        minimumFractionDigits: 0,
+                        minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
                     </td>
@@ -236,6 +352,32 @@ function App() {
                 </tbody>
               </table>
             </div>
+            {sparkData && data ? (
+              <figure id="spark">
+                <Sparklines data={sparkData} margin={5}>
+                  <SparklinesLine
+                    color="var(--foreground)"
+                    style={{ fill: "none" }}
+                  />
+                  <SparklinesSpots spotColors={["var(--foreground)"]} />
+                </Sparklines>
+                <figcaption>
+                  {`price (last 24h) min: ${Math.min
+                    .apply(Math, sparkData)
+                    .toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })} CAD max: ${Math.max
+                    .apply(Math, sparkData)
+                    .toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })} CAD`}
+                </figcaption>
+              </figure>
+            ) : (
+              <></>
+            )}
             <div id="calculator">
               <h2>Can I retire?</h2>
               <div className="input-group">
@@ -252,7 +394,7 @@ function App() {
                   {(stocks * data?.getQuoteBySymbol.price).toLocaleString(
                     undefined,
                     {
-                      minimumFractionDigits: 0,
+                      minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     }
                   )}{" "}
@@ -262,7 +404,7 @@ function App() {
                     data?.getQuoteBySymbol.price *
                     cadRate!
                   ).toLocaleString(undefined, {
-                    minimumFractionDigits: 0,
+                    minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
                 </div>
@@ -276,7 +418,7 @@ function App() {
                 <span>
                   1 CAD ~= €
                   {cadRate!.toLocaleString(undefined, {
-                    minimumFractionDigits: 0,
+                    minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
                 </span>
@@ -285,6 +427,19 @@ function App() {
               )}
             </div>
           </main>
+          <footer>
+            <button id="share" onClick={share}>
+              share
+            </button>
+            <button
+              id="theme"
+              onMouseUp={secretHandler}
+              onClick={cycleTheme}
+              style={{
+                background: nextThemeBackground,
+              }}
+            ></button>
+          </footer>
         </section>
       )}
     </div>
