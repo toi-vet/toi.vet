@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, gql } from "@apollo/client";
 import history from "history/browser";
-import html2canvas from "html2canvas";
 import { Sparklines, SparklinesLine } from "react-sparklines-typescript";
+
 interface ToiVars {
   symbol: string;
   locale: string;
@@ -95,7 +95,8 @@ function App() {
   const urlParams = new URLSearchParams(window.location.search);
   const stonksParam = urlParams.get("stocks");
   const stonksNr = Number(stonksParam);
-  const stonks = !isNaN(stonksNr) ? stonksNr : "";
+  const stonks =
+    stonksParam != null && !isNaN(stonksNr) && stonksNr !== 0 ? stonksNr : "";
   const themeParam = urlParams.get("theme");
   const themeNr = Number(themeParam);
   const theme = !isNaN(themeNr) && themeNr < themes.length ? themeNr : 0;
@@ -115,7 +116,7 @@ function App() {
   const date = new Date().getDate();
   const startDate = useMemo(() => {
     const today = new Date();
-    today.setDate(date - 5);
+    today.setDate(date - 1);
     return Math.floor(today.getTime() / 1000);
   }, [date]);
 
@@ -128,12 +129,7 @@ function App() {
   }
 
   function cycleTheme() {
-    const themeNr = (currentTheme + 1) % themes.length;
-    setTheme(themeNr);
-    history.push({
-      pathname: "/",
-      search: getSearch(stocks, themeNr),
-    });
+    setTheme((currentTheme + 1) % themes.length);
   }
 
   function formatPrice(value?: number): string {
@@ -186,7 +182,11 @@ function App() {
   useEffect(() => {
     async function fetchRates() {
       setRates(
-          await (await fetch("https://api.exchangeratesapi.io/latest?base=EUR&symbols=CAD")).json()
+        await (
+          await fetch(
+            "https://api.exchangeratesapi.io/latest?base=EUR&symbols=CAD"
+          )
+        ).json()
       );
     }
     fetchRates();
@@ -224,14 +224,20 @@ function App() {
     return () => clearInterval(intervalId);
   }, [discoMode, currentTheme, themes.length]);
 
-  function stockChanged(ev: React.ChangeEvent<HTMLInputElement>) {
-    const amount = Number(ev.target.value);
-    setStocks(!isNaN(amount) ? amount : "");
+  useEffect(() => {
     history.push({
       pathname: "/",
-      search: getSearch(amount, themeNr),
+      search: getSearch(stocks, themeNr),
     });
-  }
+  }, [stocks, themeNr]);
+
+  const stockChanged = useCallback(
+    (ev: React.ChangeEvent<HTMLInputElement>) => {
+      const amount = Number(ev.target.value);
+      setStocks(ev.target.value !== "" && !isNaN(amount) ? amount : "");
+    },
+    []
+  );
 
   function secretHandler(event: React.MouseEvent) {
     if (event.button === 1) {
@@ -241,35 +247,6 @@ function App() {
 
   function isNumeric(str: string): boolean {
     return !isNaN(Number(str));
-  }
-
-  async function share() {
-    const ele = document.getElementById("stock")!;
-    const contrib = document.createElement("div");
-    contrib.textContent = "https://toi.vet";
-    contrib.setAttribute(
-      "style",
-      "width: 100%; text-align: center; font-weight: bold"
-    );
-    ele.appendChild(contrib);
-    ele.setAttribute("style", "transition: none;");
-    const canvas = await html2canvas(ele);
-    ele.removeAttribute("style");
-    contrib.remove();
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        const now = new Date().toISOString();
-        a.setAttribute("style", "display: none");
-        a.href = url;
-        a.download = `TOI-${now}.png`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-      }
-    });
   }
 
   return (
@@ -297,7 +274,7 @@ function App() {
                       className="tooltip"
                       data-text="percentage change since last open"
                     >
-                      change %
+                      %
                     </th>
                   </tr>
                 </thead>
@@ -330,26 +307,26 @@ function App() {
                   </tr>
                 </tbody>
               </table>
+              {sparkData && data && sparkData.length > 0 ? (
+                <figure id="spark">
+                  <Sparklines data={sparkData} margin={5}>
+                    <SparklinesLine
+                      color="var(--foreground)"
+                      style={{ fill: "none" }}
+                    />
+                  </Sparklines>
+                  <figcaption>
+                    {`price (last 24h) min: ${formatPrice(
+                      Math.min.apply(Math, sparkData)
+                    )} CAD max: ${formatPrice(
+                      Math.max.apply(Math, sparkData)
+                    )} CAD`}
+                  </figcaption>
+                </figure>
+              ) : (
+                <></>
+              )}
             </div>
-            {sparkData && data && sparkData.length > 0 ? (
-              <figure id="spark">
-                <Sparklines data={sparkData} margin={5}>
-                  <SparklinesLine
-                    color="var(--foreground)"
-                    style={{ fill: "none" }}
-                  />
-                </Sparklines>
-                <figcaption>
-                  {`price (last 24h) min: ${formatPrice(
-                    Math.min.apply(Math, sparkData)
-                  )} CAD max: ${formatPrice(
-                    Math.max.apply(Math, sparkData)
-                  )} CAD`}
-                </figcaption>
-              </figure>
-            ) : (
-              <></>
-            )}
             <div id="calculator">
               <h2>Can I retire?</h2>
               <div className="input-group">
@@ -383,9 +360,7 @@ function App() {
             </div>
           </main>
           <footer>
-            <button id="share" onClick={share}>
-              share
-            </button>
+            <div></div>
             <button
               id="theme"
               onMouseUp={secretHandler}
