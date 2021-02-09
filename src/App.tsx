@@ -184,7 +184,7 @@ function App() {
   useEffect(() => {
     async function fetchRates() {
       setRates(
-        await (await fetch("https://api.exchangeratesapi.io/latest")).json()
+          await (await fetch("https://api.exchangeratesapi.io/latest?base=EUR&symbols=CAD")).json()
       );
     }
     fetchRates();
