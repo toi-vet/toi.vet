@@ -3,11 +3,7 @@ import "./App.css";
 import { useQuery, gql } from "@apollo/client";
 import history from "history/browser";
 import html2canvas from "html2canvas";
-import {
-  Sparklines,
-  SparklinesLine,
-  SparklinesSpots,
-} from "react-sparklines-typescript";
+import { Sparklines, SparklinesLine } from "react-sparklines-typescript";
 interface ToiVars {
   symbol: string;
   locale: string;
@@ -99,10 +95,9 @@ function App() {
   const urlParams = new URLSearchParams(window.location.search);
   const stonksParam = urlParams.get("stocks");
   const stonksNr = Number(stonksParam);
-  const stonks = !isNaN(stonksNr) ? stonksNr : undefined;
+  const stonks = !isNaN(stonksNr) ? stonksNr : "";
   const themeParam = urlParams.get("theme");
   const themeNr = Number(themeParam);
-
   const theme = !isNaN(themeNr) && themeNr < themes.length ? themeNr : 0;
 
   const [currentTheme, setTheme] = useState<number>(theme);
@@ -111,7 +106,7 @@ function App() {
   );
 
   const [nextThemeBackground, setNextThemeBackground] = useState<string>("");
-  const [stocks, setStocks] = useState<number | undefined>(stonks);
+  const [stocks, setStocks] = useState<number | string>(stonks);
   const [rates, setRates] = useState<ExchangeRates | null>(null);
   const [cadRate, setCadRate] = useState<number | null>(null);
   const [sparkData, setSparkData] = useState<number[] | null>(null);
@@ -124,12 +119,28 @@ function App() {
     return Math.floor(today.getTime() / 1000);
   }, [date]);
 
+  function getSearch(stocks: number | string, theme: number) {
+    if (typeof stocks == "number") {
+      return `?stocks=${stocks}&theme=${theme}`;
+    } else {
+      return `?theme=${theme}`;
+    }
+  }
+
   function cycleTheme() {
     const themeNr = (currentTheme + 1) % themes.length;
     setTheme(themeNr);
     history.push({
       pathname: "/",
-      search: `?stocks=${stocks}&theme=${themeNr}`,
+      search: getSearch(stocks, themeNr),
+    });
+  }
+
+  function formatPrice(value?: number): string {
+    if (!value) return "";
+    return value.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     });
   }
 
@@ -166,18 +177,9 @@ function App() {
 
   useEffect(() => {
     if (!loading && data?.getQuoteBySymbol && cadRate) {
-      document.title = `TOI | ${data?.getQuoteBySymbol.price.toLocaleString(
-        undefined,
-        {
-          minimumFractionDigits: 2,
-        }
-      )} CAD | € ${(data?.getQuoteBySymbol.price * cadRate).toLocaleString(
-        undefined,
-        {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }
-      )}`;
+      document.title = `TOI | ${formatPrice(
+        data?.getQuoteBySymbol.price
+      )} CAD | € ${formatPrice(data?.getQuoteBySymbol.price * cadRate)}`;
     }
   }, [data, loading, cadRate]);
 
@@ -223,22 +225,22 @@ function App() {
   }, [discoMode, currentTheme, themes.length]);
 
   function stockChanged(ev: React.ChangeEvent<HTMLInputElement>) {
-    const amount = parseFloat(ev.target.value);
-    if (!isNaN(amount)) {
-      setStocks(parseFloat(ev.target.value));
-      history.push({
-        pathname: "/",
-        search: `?stocks=${stocks}&theme=${theme}`,
-      });
-    } else {
-      setStocks(undefined);
-    }
+    const amount = Number(ev.target.value);
+    setStocks(!isNaN(amount) ? amount : "");
+    history.push({
+      pathname: "/",
+      search: getSearch(amount, themeNr),
+    });
   }
 
   function secretHandler(event: React.MouseEvent) {
-    if(event.button === 1){
+    if (event.button === 1) {
       setDiscoMode(!discoMode);
     }
+  }
+
+  function isNumeric(str: string): boolean {
+    return !isNaN(Number(str));
   }
 
   async function share() {
@@ -301,49 +303,26 @@ function App() {
                 </thead>
                 <tbody>
                   <tr>
+                    <td>{formatPrice(data?.getQuoteBySymbol.price)} CAD</td>
                     <td>
-                      {data?.getQuoteBySymbol.price.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                      })}{" "}
-                      CAD
+                      {formatPrice(data?.getQuoteBySymbol.priceChange)} CAD
                     </td>
                     <td>
-                      {data?.getQuoteBySymbol.priceChange.toLocaleString(
-                        undefined,
-                        {
-                          minimumFractionDigits: 2,
-                        }
-                      )}{" "}
-                      CAD
-                    </td>
-                    <td>
-                      {data?.getQuoteBySymbol.percentChange.toLocaleString(
-                        undefined,
-                        {
-                          minimumFractionDigits: 2,
-                        }
-                      )}
-                      %
+                      {data?.getQuoteBySymbol.percentChange.toLocaleString()}%
                     </td>
                   </tr>
                   <tr>
                     <td>
                       €&nbsp;
-                      {(
+                      {formatPrice(
                         data?.getQuoteBySymbol.price! * (cadRate ?? NaN)
-                      ).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                      )}
                     </td>
                     <td>
                       €&nbsp;
-                      {(
+                      {formatPrice(
                         data?.getQuoteBySymbol.priceChange! * (cadRate ?? NaN)
-                      ).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                      )}
                     </td>
                     <td>
                       {data?.getQuoteBySymbol.percentChange.toLocaleString()}%
@@ -352,27 +331,20 @@ function App() {
                 </tbody>
               </table>
             </div>
-            {sparkData && data ? (
+            {sparkData && data && sparkData.length > 0 ? (
               <figure id="spark">
                 <Sparklines data={sparkData} margin={5}>
                   <SparklinesLine
                     color="var(--foreground)"
                     style={{ fill: "none" }}
                   />
-                  <SparklinesSpots spotColors={["var(--foreground)"]} />
                 </Sparklines>
                 <figcaption>
-                  {`price (last 24h) min: ${Math.min
-                    .apply(Math, sparkData)
-                    .toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })} CAD max: ${Math.max
-                    .apply(Math, sparkData)
-                    .toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })} CAD`}
+                  {`price (last 24h) min: ${formatPrice(
+                    Math.min.apply(Math, sparkData)
+                  )} CAD max: ${formatPrice(
+                    Math.max.apply(Math, sparkData)
+                  )} CAD`}
                 </figcaption>
               </figure>
             ) : (
@@ -389,24 +361,17 @@ function App() {
                   onChange={stockChanged}
                 ></input>
               </div>
-              {data?.getQuoteBySymbol.price && stocks ? (
+              {data?.getQuoteBySymbol.price &&
+              stocks &&
+              isNumeric(stocks as string) ? (
                 <div>
-                  {(stocks * data?.getQuoteBySymbol.price).toLocaleString(
-                    undefined,
-                    {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }
+                  {formatPrice(
+                    (stocks as number) * data?.getQuoteBySymbol.price
                   )}{" "}
                   CAD / €&nbsp;
-                  {(
-                    stocks *
-                    data?.getQuoteBySymbol.price *
-                    cadRate!
-                  ).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
+                  {formatPrice(
+                    (stocks as number) * data?.getQuoteBySymbol.price * cadRate!
+                  )}
                 </div>
               ) : (
                 <></>
@@ -414,17 +379,7 @@ function App() {
             </div>
 
             <div id="exchange">
-              {cadRate ? (
-                <span>
-                  1 CAD ~= €
-                  {cadRate!.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-              ) : (
-                <></>
-              )}
+              {cadRate ? <span>1 CAD ~= €{formatPrice(cadRate)}</span> : <></>}
             </div>
           </main>
           <footer>
