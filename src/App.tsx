@@ -38,13 +38,6 @@ interface GraphVars {
   endDateTime?: number | null;
 }
 
-type Rate = { [key: string]: number };
-interface ExchangeRates {
-  rates: Rate;
-  base: string;
-  date: string;
-}
-
 const GET_TOI = gql`
   query getQuoteBySymbol($symbol: String, $locale: String) {
     getQuoteBySymbol(symbol: $symbol, locale: $locale) {
@@ -108,7 +101,6 @@ function App() {
 
   const [nextThemeBackground, setNextThemeBackground] = useState<string>("");
   const [stocks, setStocks] = useState<number | string>(stonks);
-  const [rates, setRates] = useState<ExchangeRates | null>(null);
   const [cadRate, setCadRate] = useState<number | null>(null);
   const [sparkData, setSparkData] = useState<number[] | null>(null);
   const [discoMode, setDiscoMode] = useState<boolean>(false);
@@ -181,12 +173,14 @@ function App() {
 
   useEffect(() => {
     async function fetchRates() {
-      setRates(
-        await (
-          await fetch(
-            "https://api.exchangeratesapi.io/latest?base=EUR&symbols=CAD"
-          )
-        ).json()
+      setCadRate(
+        (
+          await (
+            await fetch(
+              "https://api.exchangeratesapi.io/latest?base=CAD&symbols=EUR"
+            )
+          ).json()
+        ).rates["EUR"]
       );
     }
     fetchRates();
@@ -207,12 +201,6 @@ function App() {
   useEffect(() => {
     setNextThemeBackground(`var(--${themes[nextTheme].background})`);
   }, [nextTheme, setNextThemeBackground, themes]);
-
-  useEffect(() => {
-    if (rates?.rates["CAD"] != null) {
-      setCadRate(1 / rates?.rates["CAD"]);
-    }
-  }, [rates]);
 
   useEffect(() => {
     let intervalId: number;
