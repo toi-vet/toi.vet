@@ -79,9 +79,9 @@ const GET_TIMESERIES = gql`
 function App() {
   const themes = useMemo(
     () => [
-      { background: "yellow", foreground: "dark" },
-      { background: "pink", foreground: "light" },
-      { background: "blue", foreground: "light" },
+      { background: "yellow", foreground: "dark", github: "/github.png" },
+      { background: "pink", foreground: "light", github: "/github-light.png" },
+      { background: "blue", foreground: "light", github: "/github-light.png" },
     ],
     []
   );
@@ -377,7 +377,12 @@ function App() {
             </div>
           </main>
           <footer>
-            <div></div>
+            <a
+              href="https://github.com/rikharink/toi.vet"
+              aria-label="GitHub repository rikharink/toi.vet"
+            >
+              <img src={themes[currentTheme].github} alt=""></img>
+            </a>
             <button
               id="theme"
               onMouseUp={secretHandler}
