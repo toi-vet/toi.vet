@@ -190,6 +190,7 @@ table {
 button {
   transition: 0.2s ease-in-out;
   cursor: pointer;
+  outline: none;
 }
 
 button:hover,
