@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, gql } from "@apollo/client";
 import history from "history/browser";
 import { Sparklines, SparklinesLine } from "react-sparklines-typescript";
+import { useInterval } from "./UseIntervalHook";
 
 interface ToiVars {
   symbol: string;
@@ -111,6 +112,22 @@ function App() {
     today.setDate(date - 1);
     return Math.floor(today.getTime() / 1000);
   }, [date]);
+
+  const [marketState, setMarketState] = useState<string | undefined>();
+
+  useInterval(
+    async () =>
+      setMarketState(
+        (
+          await (
+            await fetch(
+              "https://toi-cors.herokuapp.com/https://query2.finance.yahoo.com/v7/finance/quote?symbols=TOI.V"
+            )
+          ).json()
+        )?.quoteResponse?.result[0]?.marketState
+      ),
+    60000
+  );
 
   function getSearch(stocks: number | string, theme: number) {
     if (typeof stocks == "number") {
@@ -245,7 +262,7 @@ function App() {
         <section id="topistonk">
           <main>
             <div id="stock">
-              <div>
+              <div className="title-wrapper">
                 <h1>{data?.getQuoteBySymbol.symbol}</h1>
               </div>
               <table id="data">
@@ -309,8 +326,20 @@ function App() {
                     )} CAD max: ${formatPrice(
                       Math.max.apply(Math, sparkData)
                     )} CAD`}
+                    {marketState && (
+                      <>
+                        <br />
+                        market:{" "}
+                        {marketState?.toLowerCase().replace("regular", "open")}
+                      </>
+                    )}
                   </figcaption>
                 </figure>
+              ) : marketState ? (
+                <div>
+                  market:{" "}
+                  {marketState?.toLowerCase().replace("regular", "open")}
+                </div>
               ) : (
                 <></>
               )}
