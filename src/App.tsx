@@ -1,80 +1,15 @@
 import "./App.css";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useQuery, gql } from "@apollo/client";
 import history from "history/browser";
-import { Sparklines, SparklinesLine } from "react-sparklines-typescript";
+import { useQuery } from "@apollo/client";
 import { useInterval } from "./UseIntervalHook";
-
-interface ToiVars {
-  symbol: string;
-  locale: string;
-}
-
-interface ToiData {
-  getQuoteBySymbol: {
-    symbol: string;
-    name: string;
-    openPrice: number;
-    price: number;
-    priceChange: number;
-    percentChange: number;
-  };
-}
-
-interface GraphData {
-  getTimeSeriesData: [
-    {
-      dateTime: string;
-      open: number;
-    }
-  ];
-}
-interface GraphVars {
-  symbol: string;
-  freq?: string;
-  interval?: number;
-  start?: string;
-  end?: string;
-  startDateTime?: number | null;
-  endDateTime?: number | null;
-}
-
-const GET_TOI = gql`
-  query getQuoteBySymbol($symbol: String, $locale: String) {
-    getQuoteBySymbol(symbol: $symbol, locale: $locale) {
-      symbol
-      openPrice
-      price
-      priceChange
-      percentChange
-    }
-  }
-`;
-
-const GET_TIMESERIES = gql`
-  query getTimeSeriesData(
-    $symbol: String!
-    $freq: String
-    $interval: Int
-    $start: String
-    $end: String
-    $startDateTime: Int
-    $endDateTime: Int
-  ) {
-    getTimeSeriesData(
-      symbol: $symbol
-      freq: $freq
-      interval: $interval
-      start: $start
-      end: $end
-      startDateTime: $startDateTime
-      endDateTime: $endDateTime
-    ) {
-      dateTime
-      open
-    }
-  }
-`;
+import { formatPrice } from "./util";
+import { Calculator } from "./components/Calculator";
+import { StockInfo } from "./components/StockInfo";
+import { ExchangeRate } from "./components/ExchangeRate";
+import { Footer } from "./components/Footer";
+import { SparkData, SparkVars, SPARK_QUERY } from "./spark-query";
+import { ToiData, ToiVars, TOI_QUERY } from "./toi-query";
 
 function App() {
   const themes = useMemo(
@@ -91,6 +26,7 @@ function App() {
   const stonksNr = Number(stonksParam);
   const stonks =
     stonksParam != null && !isNaN(stonksNr) && stonksNr !== 0 ? stonksNr : "";
+  const [stocks, setStocks] = useState<number | string>(stonks);
   const themeParam = urlParams.get("theme");
   const themeNr = Number(themeParam);
   const theme = !isNaN(themeNr) && themeNr < themes.length ? themeNr : 0;
@@ -101,7 +37,6 @@ function App() {
   );
 
   const [nextThemeBackground, setNextThemeBackground] = useState<string>("");
-  const [stocks, setStocks] = useState<number | string>(stonks);
   const [cadRate, setCadRate] = useState<number | null>(null);
   const [sparkData, setSparkData] = useState<number[] | null>(null);
   const [discoMode, setDiscoMode] = useState<boolean>(false);
@@ -129,6 +64,21 @@ function App() {
     60000
   );
 
+  useInterval(() => {
+    async function fetchRates() {
+      setCadRate(
+        (
+          await (
+            await fetch(
+              "https://api.exchangeratesapi.io/latest?base=CAD&symbols=EUR"
+            )
+          ).json()
+        ).rates["EUR"]
+      );
+    }
+    fetchRates();
+  }, 60000);
+
   function getSearch(stocks: number | string, theme: number) {
     if (typeof stocks == "number") {
       return `?stocks=${stocks}&theme=${theme}`;
@@ -141,15 +91,13 @@ function App() {
     setTheme((currentTheme + 1) % themes.length);
   }
 
-  function formatPrice(value?: number): string {
-    if (!value) return "";
-    return value.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+  function secretHandler(event: React.MouseEvent) {
+    if (event.button === 1) {
+      setDiscoMode(!discoMode);
+    }
   }
 
-  const { data: graphData } = useQuery<GraphData, GraphVars>(GET_TIMESERIES, {
+  const { data: graphData } = useQuery<SparkData, SparkVars>(SPARK_QUERY, {
     variables: {
       symbol: "TOI",
       interval: 5,
@@ -159,7 +107,7 @@ function App() {
     pollInterval: 300000,
   });
 
-  const { loading, data } = useQuery<ToiData, ToiVars>(GET_TOI, {
+  const { loading, data } = useQuery<ToiData, ToiVars>(TOI_QUERY, {
     variables: {
       symbol: "TOI",
       locale: "en",
@@ -187,21 +135,6 @@ function App() {
       )} CAD | € ${formatPrice(data?.getQuoteBySymbol.price * cadRate)}`;
     }
   }, [data, loading, cadRate]);
-
-  useEffect(() => {
-    async function fetchRates() {
-      setCadRate(
-        (
-          await (
-            await fetch(
-              "https://api.exchangeratesapi.io/latest?base=CAD&symbols=EUR"
-            )
-          ).json()
-        ).rates["EUR"]
-      );
-    }
-    fetchRates();
-  }, []);
 
   useEffect(() => {
     document.documentElement.style.setProperty(
@@ -244,16 +177,6 @@ function App() {
     []
   );
 
-  function secretHandler(event: React.MouseEvent) {
-    if (event.button === 1) {
-      setDiscoMode(!discoMode);
-    }
-  }
-
-  function isNumeric(str: string): boolean {
-    return !isNaN(Number(str));
-  }
-
   return (
     <div className="App">
       {loading ? (
@@ -261,137 +184,30 @@ function App() {
       ) : (
         <section id="topistonk">
           <main>
-            <div id="stock">
-              <div className="title-wrapper">
-                <h1>{data?.getQuoteBySymbol.symbol}</h1>
-              </div>
-              <table id="data">
-                <thead>
-                  <tr>
-                    <th>price</th>
-                    <th
-                      className="tooltip"
-                      data-text="absolute change since last open"
-                    >
-                      change
-                    </th>
-                    <th
-                      className="tooltip"
-                      data-text="percentage change since last open"
-                    >
-                      %
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{formatPrice(data?.getQuoteBySymbol.price)} CAD</td>
-                    <td>
-                      {formatPrice(data?.getQuoteBySymbol.priceChange)} CAD
-                    </td>
-                    <td>
-                      {data?.getQuoteBySymbol.percentChange.toLocaleString()}%
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      €&nbsp;
-                      {formatPrice(
-                        data?.getQuoteBySymbol.price! * (cadRate ?? NaN)
-                      )}
-                    </td>
-                    <td>
-                      €&nbsp;
-                      {formatPrice(
-                        data?.getQuoteBySymbol.priceChange! * (cadRate ?? NaN)
-                      )}
-                    </td>
-                    <td>
-                      {data?.getQuoteBySymbol.percentChange.toLocaleString()}%
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              {sparkData && data && sparkData.length > 0 ? (
-                <figure id="spark">
-                  <Sparklines data={sparkData} margin={5}>
-                    <SparklinesLine
-                      color="var(--foreground)"
-                      style={{ fill: "none" }}
-                    />
-                  </Sparklines>
-                  <figcaption>
-                    {`price (last 24h) min: ${formatPrice(
-                      Math.min.apply(Math, sparkData)
-                    )} CAD max: ${formatPrice(
-                      Math.max.apply(Math, sparkData)
-                    )} CAD`}
-                    {marketState && (
-                      <>
-                        <br />
-                        market:{" "}
-                        {marketState?.toLowerCase().replace("regular", "open")}
-                      </>
-                    )}
-                  </figcaption>
-                </figure>
-              ) : marketState ? (
-                <div>
-                  market:{" "}
-                  {marketState?.toLowerCase().replace("regular", "open")}
-                </div>
-              ) : (
-                <></>
-              )}
-            </div>
-            <div id="calculator">
-              <h2>Can I retire?</h2>
-              <div className="input-group">
-                <label htmlFor="stocks">number of stocks:</label>
-                <input
-                  id="stocks"
-                  type="number"
-                  value={stocks}
-                  onChange={stockChanged}
-                ></input>
-              </div>
-              {data?.getQuoteBySymbol.price &&
-              stocks &&
-              isNumeric(stocks as string) ? (
-                <div>
-                  {formatPrice(
-                    (stocks as number) * data?.getQuoteBySymbol.price
-                  )}{" "}
-                  CAD / €&nbsp;
-                  {formatPrice(
-                    (stocks as number) * data?.getQuoteBySymbol.price * cadRate!
-                  )}
-                </div>
-              ) : (
-                <></>
-              )}
-            </div>
-
-            <div id="exchange">
-              {cadRate ? <span>1 CAD ~= €{formatPrice(cadRate)}</span> : <></>}
-            </div>
+            <StockInfo
+              symbol={data?.getQuoteBySymbol.symbol ?? "TOI"}
+              price={data?.getQuoteBySymbol.price}
+              priceChange={data?.getQuoteBySymbol.priceChange}
+              percentChange={data?.getQuoteBySymbol.percentChange}
+              cadRate={cadRate ?? NaN}
+              sparkData={sparkData}
+              marketState={marketState}
+            />
+            <Calculator
+              stocks={stocks}
+              stockChanged={stockChanged}
+              price={data?.getQuoteBySymbol.price}
+              cadRate={cadRate}
+            />
+            <ExchangeRate cadRate={cadRate} />
           </main>
-          <footer>
-            <a
-              href="https://github.com/rikharink/toi.vet"
-              aria-label="GitHub repository rikharink/toi.vet"
-            >
-              <img src={themes[currentTheme].github} alt=""></img>
-            </a>
-            <button
-              id="theme"
-              onMouseUp={secretHandler}
-              onClick={cycleTheme}
-              style={{
-                background: nextThemeBackground,
-              }}
-            ></button>
-          </footer>
+          <Footer
+            themes={themes}
+            currentTheme={currentTheme}
+            nextThemeBackground={nextThemeBackground}
+            secretHandler={secretHandler}
+            cycleTheme={cycleTheme}
+          />
         </section>
       )}
     </div>

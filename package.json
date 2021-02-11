@@ -1,6 +1,6 @@
 {
-  "name": "toitoitoi",
-  "version": "0.1.0",
+  "name": "toi.vet",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@apollo/client": "3.3.7",
