@@ -1,8 +1,12 @@
-export function formatPrice(value?: number): string {
+export function formatNumber(
+  value?: number,
+  minimumFractionDigits?: number,
+  maximumFractionDigits?: number
+): string {
   if (!value) return "";
   return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: minimumFractionDigits ?? 2,
+    maximumFractionDigits: maximumFractionDigits ?? 2,
   });
 }
 

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import history from "history/browser";
 import { useQuery } from "@apollo/client";
 import { useInterval } from "./UseIntervalHook";
-import { formatPrice } from "./util";
+import { formatNumber } from "./util";
 import { Calculator } from "./components/Calculator";
 import { StockInfo } from "./components/StockInfo";
 import { ExchangeRate } from "./components/ExchangeRate";
@@ -130,11 +130,11 @@ function App() {
 
   useEffect(() => {
     if (!loading && data?.getQuoteBySymbol && cadRate) {
-      document.title = `TOI | ${formatPrice(
+      document.title = `TOI | ${formatNumber(
         data?.getQuoteBySymbol.price
-      )} CAD | € ${formatPrice(
+      )} CAD | € ${formatNumber(
         data?.getQuoteBySymbol.price * cadRate
-      )} | ${formatPrice(data?.getQuoteBySymbol.percentChange)}%`;
+      )} | ${formatNumber(data?.getQuoteBySymbol.percentChange)}%`;
     }
   }, [data, loading, cadRate]);
 
@@ -188,6 +188,8 @@ function App() {
           <main>
             <StockInfo
               symbol={data?.getQuoteBySymbol.symbol ?? "TOI"}
+              openPrice={data?.getQuoteBySymbol.openPrice}
+              volume={data?.getQuoteBySymbol.volume}
               price={data?.getQuoteBySymbol.price}
               priceChange={data?.getQuoteBySymbol.priceChange}
               percentChange={data?.getQuoteBySymbol.percentChange}

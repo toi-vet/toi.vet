@@ -1,9 +1,11 @@
 import * as React from "react";
 import { Sparklines, SparklinesLine } from "react-sparklines-typescript";
-import { formatPrice } from "../util";
+import { formatNumber } from "../util";
 
 export interface IStockInfoProps {
   symbol: string;
+  openPrice: number | undefined;
+  volume: number | undefined;
   price: number | undefined;
   priceChange: number | undefined;
   percentChange: number | undefined;
@@ -14,6 +16,8 @@ export interface IStockInfoProps {
 
 export function StockInfo({
   symbol,
+  openPrice,
+  volume,
   price,
   priceChange,
   percentChange,
@@ -43,18 +47,18 @@ export function StockInfo({
         </thead>
         <tbody>
           <tr>
-            <td>{formatPrice(price)} CAD</td>
-            <td>{formatPrice(priceChange)} CAD</td>
+            <td>{formatNumber(price)} CAD</td>
+            <td>{formatNumber(priceChange)} CAD</td>
             <td>{percentChange.toLocaleString()}%</td>
           </tr>
           <tr>
             <td>
               €&nbsp;
-              {formatPrice(price * cadRate)}
+              {formatNumber(price * cadRate)}
             </td>
             <td>
               €&nbsp;
-              {formatPrice(priceChange * cadRate)}
+              {formatNumber(priceChange * cadRate)}
             </td>
             <td>{percentChange.toLocaleString()}%</td>
           </tr>
@@ -69,24 +73,23 @@ export function StockInfo({
             />
           </Sparklines>
           <figcaption>
-            {`price (last 24h) min: ${formatPrice(
+            {`price (last 24h) min: ${formatNumber(
               Math.min.apply(Math, sparkData)
-            )} CAD max: ${formatPrice(Math.max.apply(Math, sparkData))} CAD`}
-            {marketState && (
-              <>
-                <br />
-                market: {marketState?.toLowerCase().replace("regular", "open")}
-              </>
-            )}
+            )} CAD max: ${formatNumber(Math.max.apply(Math, sparkData))} CAD`}
           </figcaption>
         </figure>
-      ) : marketState ? (
-        <div>
-          market: {marketState?.toLowerCase().replace("regular", "open")}
-        </div>
       ) : (
         <></>
       )}
+      <div className="stock-details">
+        <ul>
+          <li>
+            market: {marketState?.toLowerCase().replace("regular", "open")}
+          </li>
+          {openPrice && <li>open price: {formatNumber(openPrice)} CAD</li>}
+          {volume && <li>volume: {formatNumber(volume, 0, 0)}</li>}
+        </ul>
+      </div>
     </div>
   ) : (
     <></>

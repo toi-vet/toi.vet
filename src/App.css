@@ -240,6 +240,21 @@ th {
   align-items: center;
 }
 
+.stock-details {
+  font-size: 1.2rem;
+}
+
+.stock-details ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stock-details li {
+  display: inline;
+  margin: 0 1ch;
+}
+
 @media only screen and (min-width: 800px) {
   body {
     align-items: center;

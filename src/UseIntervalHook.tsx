@@ -20,6 +20,7 @@ export function useInterval(callback: () => void, delay: number) {
         savedCallback.current();
       }
       let id = setInterval(tick, delay);
+      tick();
       return () => clearInterval(id);
     }
   }, [delay]);

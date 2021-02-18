@@ -1,5 +1,5 @@
 import * as React from "react";
-import { formatPrice, isNumeric } from "../util";
+import { formatNumber, isNumeric } from "../util";
 
 export interface ICalculatorProps {
   stocks: number | string;
@@ -28,8 +28,8 @@ export function Calculator({
       </div>
       {price && cadRate && stocks && isNumeric(stocks as string) ? (
         <div>
-          {formatPrice((stocks as number) * price)} CAD / €&nbsp;
-          {formatPrice((stocks as number) * price * cadRate)}
+          {formatNumber((stocks as number) * price)} CAD / €&nbsp;
+          {formatNumber((stocks as number) * price * cadRate)}
         </div>
       ) : (
         <></>

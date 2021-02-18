@@ -5,6 +5,7 @@ export const TOI_QUERY = gql`
     getQuoteBySymbol(symbol: $symbol, locale: $locale) {
       symbol
       openPrice
+      volume
       price
       priceChange
       percentChange
@@ -22,6 +23,7 @@ export interface ToiData {
     symbol: string;
     name: string;
     openPrice: number;
+    volume: number;
     price: number;
     priceChange: number;
     percentChange: number;
