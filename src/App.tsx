@@ -132,7 +132,9 @@ function App() {
     if (!loading && data?.getQuoteBySymbol && cadRate) {
       document.title = `TOI | ${formatPrice(
         data?.getQuoteBySymbol.price
-      )} CAD | € ${formatPrice(data?.getQuoteBySymbol.price * cadRate)}`;
+      )} CAD | € ${formatPrice(
+        data?.getQuoteBySymbol.price * cadRate
+      )} | ${formatPrice(data?.getQuoteBySymbol.percentChange)}%`;
     }
   }, [data, loading, cadRate]);
 
@@ -165,9 +167,9 @@ function App() {
   useEffect(() => {
     history.push({
       pathname: "/",
-      search: getSearch(stocks, themeNr),
+      search: getSearch(stocks, currentTheme),
     });
-  }, [stocks, themeNr]);
+  }, [stocks, currentTheme]);
 
   const stockChanged = useCallback(
     (ev: React.ChangeEvent<HTMLInputElement>) => {
