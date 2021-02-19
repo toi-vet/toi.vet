@@ -25,7 +25,10 @@ export function StockInfo({
   sparkData,
   marketState,
 }: IStockInfoProps) {
-  return price && priceChange && percentChange && cadRate ? (
+  return price !== undefined &&
+    priceChange !== undefined &&
+    percentChange !== undefined &&
+    cadRate !== undefined ? (
     <div id="stock">
       <div className="title-wrapper">
         <h1>{symbol}</h1>

@@ -24,8 +24,14 @@ export function Footer({
       >
         <img src={themes[currentTheme].github} alt=""></img>
       </a>
+
+      <a className="btn btn-link" href="/shop.html">
+        merch
+      </a>
+
       <button
         id="theme"
+        className="btn"
         onMouseUp={secretHandler}
         onClick={cycleTheme}
         style={{
