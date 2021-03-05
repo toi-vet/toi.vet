@@ -1874,10 +1874,10 @@
     rimraf "^3.0.2"
     tar "^6.0.2"
 
-"@cloudflare/wrangler@1.14.0":
-  version "1.14.0"
-  resolved "https://registry.yarnpkg.com/@cloudflare/wrangler/-/wrangler-1.14.0.tgz#a8a35b576c8d9eece0fa1cc583d6030aaab009a5"
-  integrity sha512-doPPJT+VbDNFBdYomopwDM2HWPLcNjt7TWKwYi+umt4rJ1b2WhrlfHLKBSiiap9Al5OD/EjV03H+2qnsp2cyHQ==
+"@cloudflare/wrangler@1.14.1":
+  version "1.14.1"
+  resolved "https://registry.yarnpkg.com/@cloudflare/wrangler/-/wrangler-1.14.1.tgz#51f2221a96cbbf9545d7acee79f59707cdba06a7"
+  integrity sha512-Ua1anKiQvG9AHYhrcL6dRHsU1Zi6Ics3jEraLSn7uLRcSkHg/qblvoVwXTRCklhq7iokXl8/CFlFsuCTcb5riA==
   dependencies:
     "@cloudflare/binary-install" "0.2.0"
 
