@@ -70,10 +70,10 @@ function App() {
         (
           await (
             await fetch(
-              "https://api.exchangeratesapi.io/latest?base=CAD&symbols=EUR"
+              "https://toi-cors.herokuapp.com/https://query1.finance.yahoo.com/v7/finance/quote?symbols=CADEUR%3DX"
             )
           ).json()
-        ).rates["EUR"]
+        )?.quoteResponse?.result[0]?.regularMarketPrice
       );
     }
     fetchRates();
