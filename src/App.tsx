@@ -56,7 +56,7 @@ function App() {
         (
           await (
             await fetch(
-              "https://toi-cors.herokuapp.com/https://query2.finance.yahoo.com/v7/finance/quote?symbols=TOI.V"
+              `${process.env.REACT_APP_PROXY_BASE}https://query2.finance.yahoo.com/v7/finance/quote?symbols=TOI.V`
             )
           ).json()
         )?.quoteResponse?.result[0]?.marketState
@@ -70,7 +70,7 @@ function App() {
         (
           await (
             await fetch(
-              "https://toi-cors.herokuapp.com/https://query1.finance.yahoo.com/v7/finance/quote?symbols=CADEUR%3DX"
+              `${process.env.REACT_APP_PROXY_BASE}https://query1.finance.yahoo.com/v7/finance/quote?symbols=CADEUR%3DX`
             )
           ).json()
         )?.quoteResponse?.result[0]?.regularMarketPrice
