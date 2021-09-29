@@ -9,7 +9,7 @@
     "@testing-library/user-event": "13.2.1",
     "@types/jest": "26.0.24",
     "@types/node": "12.20.27",
-    "@types/react": "17.0.24",
+    "@types/react": "17.0.25",
     "@types/react-dom": "17.0.9",
     "graphql": "15.6.0",
     "history": "5.0.1",
