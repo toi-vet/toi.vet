@@ -3,18 +3,10 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
-
-const client = new ApolloClient({
-  uri: `${process.env.REACT_APP_PROXY_BASE}https://app-money.tmx.com/graphql`,
-  cache: new InMemoryCache(),
-});
 
 ReactDOM.render(
   <React.StrictMode>
-    <ApolloProvider client={client}>
       <App />
-    </ApolloProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );

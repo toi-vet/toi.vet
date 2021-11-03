@@ -1,15 +1,22 @@
 import "./App.css";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import history from "history/browser";
-import { useQuery } from "@apollo/client";
 import { useInterval } from "./UseIntervalHook";
-import { formatNumber } from "./util";
-import { Calculator } from "./components/Calculator";
-import { StockInfo } from "./components/StockInfo";
-import { ExchangeRate } from "./components/ExchangeRate";
 import { Footer } from "./components/Footer";
-import { SparkData, SparkVars, SPARK_QUERY } from "./spark-query";
-import { ToiData, ToiVars, TOI_QUERY } from "./toi-query";
+import {
+  Configuration,
+  ConfigurationParameters,
+  StockInfoApi,
+  StockInfoGetRequest,
+  StockInfo,
+} from "./api/";
+import { CalculatorComponent } from "./components/Calculator";
+import { ExchangeRateComponent } from "./components/ExchangeRate";
+import { StockPriceComponent } from "./components/StockPrice";
+import { SparklineComponent } from "./components/Sparkline";
+import { StockDetailsComponent } from "./components/StockDetails";
+
+import { formatNumber } from "./util";
 
 function App() {
   const themes = useMemo(
@@ -20,6 +27,12 @@ function App() {
     ],
     []
   );
+
+  const api_parameters: ConfigurationParameters = {
+    basePath: process.env.REACT_APP_BACKEND_URL,
+  };
+
+  const api = new StockInfoApi(new Configuration(api_parameters));
 
   const urlParams = new URLSearchParams(window.location.search);
   const stonksParam = urlParams.get("stocks");
@@ -37,47 +50,7 @@ function App() {
   );
 
   const [nextThemeBackground, setNextThemeBackground] = useState<string>("");
-  const [cadRate, setCadRate] = useState<number | null>(null);
-  const [sparkData, setSparkData] = useState<number[] | null>(null);
   const [discoMode, setDiscoMode] = useState<boolean>(false);
-
-  const date = new Date().getDate();
-  const startDate = useMemo(() => {
-    const today = new Date();
-    today.setDate(date - 1);
-    return Math.floor(today.getTime() / 1000);
-  }, [date]);
-
-  const [marketState, setMarketState] = useState<string | undefined>();
-
-  useInterval(
-    async () =>
-      setMarketState(
-        (
-          await (
-            await fetch(
-              `${process.env.REACT_APP_PROXY_BASE}https://query2.finance.yahoo.com/v7/finance/quote?symbols=TOI.V`
-            )
-          ).json()
-        )?.quoteResponse?.result[0]?.marketState
-      ),
-    60000
-  );
-
-  useInterval(() => {
-    async function fetchRates() {
-      setCadRate(
-        (
-          await (
-            await fetch(
-              `${process.env.REACT_APP_PROXY_BASE}https://query1.finance.yahoo.com/v7/finance/quote?symbols=CADEUR%3DX`
-            )
-          ).json()
-        )?.quoteResponse?.result[0]?.regularMarketPrice
-      );
-    }
-    fetchRates();
-  }, 60000);
 
   function getSearch(stocks: number | string, theme: number) {
     if (typeof stocks == "number") {
@@ -96,47 +69,6 @@ function App() {
       setDiscoMode(!discoMode);
     }
   }
-
-  const { data: graphData } = useQuery<SparkData, SparkVars>(SPARK_QUERY, {
-    variables: {
-      symbol: "TOI",
-      interval: 5,
-      startDateTime: startDate,
-      endDateTime: null,
-    },
-    pollInterval: 300000,
-  });
-
-  const { loading, data } = useQuery<ToiData, ToiVars>(TOI_QUERY, {
-    variables: {
-      symbol: "TOI",
-      locale: "en",
-    },
-    pollInterval: 60000,
-  });
-
-  useEffect(() => {
-    if (graphData) {
-      const min = new Date();
-      min.setDate(min.getDate() - 1);
-      let data = graphData.getTimeSeriesData
-        .filter((d) => new Date(d.dateTime) >= min)
-        .filter((d) => new Date(d.dateTime) >= min)
-        .reverse()
-        .map((d) => d.open);
-      setSparkData(data);
-    }
-  }, [graphData]);
-
-  useEffect(() => {
-    if (!loading && data?.getQuoteBySymbol && cadRate) {
-      document.title = `TOI | ${formatNumber(
-        data?.getQuoteBySymbol.price
-      )} CAD | € ${formatNumber(
-        data?.getQuoteBySymbol.price * cadRate
-      )} | ${formatNumber(data?.getQuoteBySymbol.percentChange)}%`;
-    }
-  }, [data, loading, cadRate]);
 
   useEffect(() => {
     document.documentElement.style.setProperty(
@@ -171,6 +103,25 @@ function App() {
     });
   }, [stocks, currentTheme]);
 
+  const [stockInfo, setStockInfo] = useState<StockInfo>();
+  useInterval(async () => {
+    const parameters: StockInfoGetRequest = {
+      symbol: "TOI.V",
+      toCurrency: "EUR",
+    };
+    const info = await api.stockInfoGet(parameters);
+    setStockInfo(info);
+  }, 60000);
+
+  useEffect(() => {
+    if (!stockInfo?.stockPrice) return;
+    document.title = `TOI | ${formatNumber(
+      stockInfo.stockPrice.price
+    )} CAD | € ${formatNumber(
+      stockInfo.stockPrice.priceConverted
+    )} | ${formatNumber(stockInfo.stockPrice.percentageChange)}%`;
+  }, [stockInfo]);
+
   const stockChanged = useCallback(
     (ev: React.ChangeEvent<HTMLInputElement>) => {
       const amount = Number(ev.target.value);
@@ -181,39 +132,35 @@ function App() {
 
   return (
     <div className="App">
-      {loading ? (
-        <h1>TOI</h1>
-      ) : (
-        <section id="topistonk">
-          <main>
-            <StockInfo
-              symbol={data?.getQuoteBySymbol.symbol ?? "TOI"}
-              openPrice={data?.getQuoteBySymbol.openPrice}
-              volume={data?.getQuoteBySymbol.volume}
-              price={data?.getQuoteBySymbol.price}
-              priceChange={data?.getQuoteBySymbol.priceChange}
-              percentChange={data?.getQuoteBySymbol.percentChange}
-              cadRate={cadRate ?? NaN}
-              sparkData={sparkData}
-              marketState={marketState}
-            />
-            <Calculator
-              stocks={stocks}
-              stockChanged={stockChanged}
-              price={data?.getQuoteBySymbol.price}
-              cadRate={cadRate}
-            />
-            <ExchangeRate cadRate={cadRate} />
-          </main>
-          <Footer
-            themes={themes}
-            currentTheme={currentTheme}
-            nextThemeBackground={nextThemeBackground}
-            secretHandler={secretHandler}
-            cycleTheme={cycleTheme}
-          />
-        </section>
-      )}
+      <section id="topistonk">
+        <main>
+          {stockInfo ? (
+            <>
+              <StockPriceComponent
+                symbol="TOI"
+                stockPrice={stockInfo.stockPrice}
+              />
+              <SparklineComponent data={stockInfo.intradayData ?? []} />
+              <StockDetailsComponent stockPrice={stockInfo.stockPrice} />
+              <CalculatorComponent
+                stocks={stocks}
+                stockChanged={stockChanged}
+                stockPrice={stockInfo.stockPrice}
+              />
+              <ExchangeRateComponent exchangeRate={stockInfo.exchangeRate} />
+            </>
+          ) : (
+            <h1>TOI</h1>
+          )}
+        </main>
+        <Footer
+          themes={themes}
+          currentTheme={currentTheme}
+          nextThemeBackground={nextThemeBackground}
+          secretHandler={secretHandler}
+          cycleTheme={cycleTheme}
+        />
+      </section>
     </div>
   );
 }

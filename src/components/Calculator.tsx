@@ -1,18 +1,17 @@
 import * as React from "react";
+import { StockPrice } from "../api";
 import { formatNumber, isNumeric } from "../util";
 
 export interface ICalculatorProps {
   stocks: number | string;
+  stockPrice?: StockPrice
   stockChanged: (ev: React.ChangeEvent<HTMLInputElement>) => void;
-  price: number | undefined;
-  cadRate: number | null;
 }
 
-export function Calculator({
+export function CalculatorComponent({
   stocks,
   stockChanged,
-  price,
-  cadRate,
+ stockPrice,
 }: ICalculatorProps) {
   return (
     <div id="calculator">
@@ -26,10 +25,10 @@ export function Calculator({
           onChange={stockChanged}
         ></input>
       </div>
-      {price && cadRate && stocks && isNumeric(stocks as string) ? (
+      {stockPrice?.price && stockPrice?.priceConverted && stocks && isNumeric(stocks as string) ? (
         <div>
-          {formatNumber((stocks as number) * price)} CAD / €&nbsp;
-          {formatNumber((stocks as number) * price * cadRate)}
+          {formatNumber((stocks as number) * stockPrice.price)} CAD / €&nbsp;
+          {formatNumber((stocks as number) * stockPrice.priceConverted)}
         </div>
       ) : (
         <></>

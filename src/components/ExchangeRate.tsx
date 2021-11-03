@@ -1,14 +1,19 @@
 import * as React from "react";
+import { ExchangeRate } from "../api";
 import { formatNumber } from "../util";
 
 export interface IExchangeRateProps {
-  cadRate: number | null;
+  exchangeRate?: ExchangeRate;
 }
 
-export function ExchangeRate({ cadRate }: IExchangeRateProps) {
+export function ExchangeRateComponent({ exchangeRate }: IExchangeRateProps) {
   return (
     <div id="exchange">
-      {cadRate ? <span>1 CAD ~= €{formatNumber(cadRate)}</span> : <></>}
+      {exchangeRate?.value ? (
+        <span>1 CAD ~= €{formatNumber(exchangeRate.value)}</span>
+      ) : (
+        <></>
+      )}
     </div>
   );
 }

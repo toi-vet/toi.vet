@@ -19,8 +19,8 @@ export function Footer({
   return (
     <footer>
       <a
-        href="https://github.com/rikharink/toi.vet"
-        aria-label="GitHub repository rikharink/toi.vet"
+        href="hhttps://github.com/toi-vet/"
+        aria-label="GitHub repositories toi.vet"
       >
         <img src={themes[currentTheme].github} alt=""></img>
       </a>

@@ -176,18 +176,6 @@ table {
   width: 80vw;
 }
 
-#share {
-  background: transparent;
-  color: var(--foreground);
-  border: 2px solid var(--foreground);
-  padding: 0.75rem;
-  font-weight: bold;
-  font-size: 1.1rem;
-  /* position: absolute;
-  bottom: 1rem;
-  left: 1rem; */
-}
-
 .btn {
   transition: 0.2s ease-in-out;
   cursor: pointer;
@@ -228,9 +216,6 @@ theme:active {
   height: 2rem;
   border: 2px solid var(--foreground);
   border-radius: 50%;
-  /* position: absolute;
-  bottom: 1rem;
-  right: 1rem; */
 }
 
 .secret {
@@ -257,11 +242,11 @@ th {
   align-items: center;
 }
 
-.stock-details {
-  font-size: 1.2rem;
+#stock-details {
+  font-size: 1.1rem;
 }
 
-.stock-details ul {
+#stock-details ul {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -271,7 +256,7 @@ th {
   flex-direction: column;
 }
 
-.stock-details li {
+#stock-details li {
   display: inline;
   margin: 0 1ch;
 }
@@ -314,7 +299,15 @@ th {
     margin: 0 0 3rem 0;
   }
 
-  .stock-details ul {
+  #stock-details {
+    line-height: 2rem;
+  }
+
+  #stock-details ul {
     flex-direction: row;
+  }
+
+  #stock {
+    padding: 0;
   }
 }
