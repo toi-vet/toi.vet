@@ -2,7 +2,7 @@ name = "toi-vet"
 type = "webpack"
 account_id = "b4e69cf20047b9ef21fb837fb53ebae3"
 workers_dev = false
-route = "*toi.vet/*"
+route = "toi.vet/*"
 zone_id = "571bbd44c05626f2b858f2da0c016a63"
 
 [site]

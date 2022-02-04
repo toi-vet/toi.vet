@@ -25,3 +25,5 @@ yarn-error.log*
 dist/
 workers-site/
 .eslintcache
+
+.cert
