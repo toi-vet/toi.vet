@@ -1,9 +1,10 @@
 apis/StockInfoApi.ts
+apis/ToiNewsApi.ts
 apis/index.ts
 index.ts
-models/Currency.ts
 models/ExchangeRate.ts
 models/IntradayDataPoint.ts
+models/NewsItem.ts
 models/OpenHighLowVolume.ts
 models/StockInfo.ts
 models/StockPrice.ts

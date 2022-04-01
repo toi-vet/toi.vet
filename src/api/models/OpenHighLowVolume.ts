@@ -13,13 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import {
-    Currency,
-    CurrencyFromJSON,
-    CurrencyFromJSONTyped,
-    CurrencyToJSON,
-} from './';
-
 /**
  * 
  * @export
@@ -31,7 +24,7 @@ export interface OpenHighLowVolume {
      * @type {number}
      * @memberof OpenHighLowVolume
      */
-    readonly open?: number;
+    open?: number;
     /**
      * 
      * @type {number}
@@ -43,7 +36,7 @@ export interface OpenHighLowVolume {
      * @type {number}
      * @memberof OpenHighLowVolume
      */
-    readonly high?: number;
+    high?: number;
     /**
      * 
      * @type {number}
@@ -55,7 +48,7 @@ export interface OpenHighLowVolume {
      * @type {number}
      * @memberof OpenHighLowVolume
      */
-    readonly low?: number;
+    low?: number;
     /**
      * 
      * @type {number}
@@ -67,13 +60,13 @@ export interface OpenHighLowVolume {
      * @type {number}
      * @memberof OpenHighLowVolume
      */
-    readonly volume?: number;
+    volume?: number;
     /**
      * 
-     * @type {Currency}
+     * @type {string}
      * @memberof OpenHighLowVolume
      */
-    currency?: Currency;
+    currency?: string | null;
     /**
      * 
      * @type {string}
@@ -99,7 +92,7 @@ export function OpenHighLowVolumeFromJSONTyped(json: any, ignoreDiscriminator: b
         'low': !exists(json, 'low') ? undefined : json['low'],
         'lowConverted': !exists(json, 'lowConverted') ? undefined : json['lowConverted'],
         'volume': !exists(json, 'volume') ? undefined : json['volume'],
-        'currency': !exists(json, 'currency') ? undefined : CurrencyFromJSON(json['currency']),
+        'currency': !exists(json, 'currency') ? undefined : json['currency'],
         'convertedCurrency': !exists(json, 'convertedCurrency') ? undefined : json['convertedCurrency'],
     };
 }
@@ -113,10 +106,14 @@ export function OpenHighLowVolumeToJSON(value?: OpenHighLowVolume | null): any {
     }
     return {
         
+        'open': value.open,
         'openConverted': value.openConverted,
+        'high': value.high,
         'highConverted': value.highConverted,
+        'low': value.low,
         'lowConverted': value.lowConverted,
-        'currency': CurrencyToJSON(value.currency),
+        'volume': value.volume,
+        'currency': value.currency,
         'convertedCurrency': value.convertedCurrency,
     };
 }

@@ -21,8 +21,8 @@ import {
 } from '../models';
 
 export interface StockInfoGetRequest {
-    symbol?: string | null;
-    toCurrency?: string | null;
+    symbol?: string;
+    toCurrency?: string;
 }
 
 /**

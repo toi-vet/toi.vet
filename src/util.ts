@@ -10,6 +10,14 @@ export function formatNumber(
   });
 }
 
+
 export function isNumeric(str: string): boolean {
   return !isNaN(Number(str));
+}
+
+export function formatDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }

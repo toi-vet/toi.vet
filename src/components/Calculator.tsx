@@ -15,7 +15,7 @@ export function CalculatorComponent({
 }: ICalculatorProps) {
   return (
     <div id="calculator">
-      <h2>Can I retire?</h2>
+      <h2>can i retire?</h2>
       <div className="input-group">
         <label htmlFor="stocks">number of stocks:</label>
         <input

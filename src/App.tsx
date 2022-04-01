@@ -9,6 +9,9 @@ import {
   StockInfoApi,
   StockInfoGetRequest,
   StockInfo,
+  ToiNewsApi,
+  ToiNewsGetRequest,
+  NewsItem,
 } from "./api/";
 import { CalculatorComponent } from "./components/Calculator";
 import { ExchangeRateComponent } from "./components/ExchangeRate";
@@ -17,6 +20,7 @@ import { SparklineComponent } from "./components/Sparkline";
 import { StockDetailsComponent } from "./components/StockDetails";
 
 import { formatNumber } from "./util";
+import { NewsComponent } from "./components/News";
 
 function App() {
   const themes = useMemo(
@@ -33,6 +37,7 @@ function App() {
   };
 
   const api = new StockInfoApi(new Configuration(api_parameters));
+  const newsApi = new ToiNewsApi(new Configuration(api_parameters));
 
   const urlParams = new URLSearchParams(window.location.search);
   const stonksParam = urlParams.get("stocks");
@@ -104,6 +109,7 @@ function App() {
   }, [stocks, currentTheme]);
 
   const [stockInfo, setStockInfo] = useState<StockInfo>();
+  const [news, setNews] = useState<NewsItem[]>();
   useInterval(async () => {
     const parameters: StockInfoGetRequest = {
       symbol: "TOI.V",
@@ -111,6 +117,12 @@ function App() {
     };
     const info = await api.stockInfoGet(parameters);
     setStockInfo(info);
+
+    const newsParameters: ToiNewsGetRequest = {
+      take: 1,
+    };
+    const news = await newsApi.toiNewsGet(newsParameters);
+    setNews(news);
   }, 60000);
 
   useEffect(() => {
@@ -142,6 +154,7 @@ function App() {
               />
               <SparklineComponent data={stockInfo.intradayData ?? []} />
               <StockDetailsComponent stockPrice={stockInfo.stockPrice} />
+              {news ? <NewsComponent news={news}/> : <></>}
               <CalculatorComponent
                 stocks={stocks}
                 stockChanged={stockChanged}
