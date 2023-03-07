@@ -7,19 +7,19 @@ export interface INewsRateProps {
 }
 
 export function NewsComponent({ news }: INewsRateProps) {
-  return (
+  return news.length > 0 ? (
     <div id="news">
-      <h2>latest news</h2>
+      <h2>latest news </h2>
       <ul className="news">
         {news.map((i) => (
           <li key={i.link!} className="news-item">
             <strong>[{formatDate(i.publishDate!)}] </strong>
-            <a href={i.link!}>
-             {i.title}
-            </a>
+            <a href={i.link!}>{i.title}</a>
           </li>
         ))}
       </ul>
     </div>
+  ) : (
+    <></>
   );
 }

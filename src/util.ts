@@ -3,7 +3,7 @@ export function formatNumber(
   minimumFractionDigits?: number,
   maximumFractionDigits?: number
 ): string {
-  if (!value) return "";
+  if (value === undefined) return "";
   return value.toLocaleString(undefined, {
     minimumFractionDigits: minimumFractionDigits ?? 2,
     maximumFractionDigits: maximumFractionDigits ?? 2,
