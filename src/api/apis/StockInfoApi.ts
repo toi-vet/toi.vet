@@ -20,11 +20,6 @@ import {
     StockInfoToJSON,
 } from '../models';
 
-export interface StockInfoGetRequest {
-    symbol?: string;
-    toCurrency?: string;
-}
-
 /**
  * 
  */
@@ -32,16 +27,8 @@ export class StockInfoApi extends runtime.BaseAPI {
 
     /**
      */
-    async stockInfoGetRaw(requestParameters: StockInfoGetRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<StockInfo>> {
+    async stockInfoGetRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<StockInfo>> {
         const queryParameters: any = {};
-
-        if (requestParameters.symbol !== undefined) {
-            queryParameters['symbol'] = requestParameters.symbol;
-        }
-
-        if (requestParameters.toCurrency !== undefined) {
-            queryParameters['toCurrency'] = requestParameters.toCurrency;
-        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -57,8 +44,8 @@ export class StockInfoApi extends runtime.BaseAPI {
 
     /**
      */
-    async stockInfoGet(requestParameters: StockInfoGetRequest, initOverrides?: RequestInit): Promise<StockInfo> {
-        const response = await this.stockInfoGetRaw(requestParameters, initOverrides);
+    async stockInfoGet(initOverrides?: RequestInit): Promise<StockInfo> {
+        const response = await this.stockInfoGetRaw(initOverrides);
         return await response.value();
     }
 

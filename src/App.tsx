@@ -7,7 +7,6 @@ import {
   Configuration,
   ConfigurationParameters,
   StockInfoApi,
-  StockInfoGetRequest,
   StockInfo,
   ToiNewsApi,
   ToiNewsGetRequest,
@@ -111,11 +110,7 @@ function App() {
   const [stockInfo, setStockInfo] = useState<StockInfo>();
   const [news, setNews] = useState<NewsItem[]>();
   useInterval(async () => {
-    const parameters: StockInfoGetRequest = {
-      symbol: "TOI.V",
-      toCurrency: "EUR",
-    };
-    const info = await api.stockInfoGet(parameters);
+    const info = await api.stockInfoGet();
     setStockInfo(info);
 
     const newsParameters: ToiNewsGetRequest = {

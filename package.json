@@ -24,7 +24,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "deploy": "react-scripts build && wrangler publish",
-    "generate:api": "openapi-generator-cli generate -i https://backend.toi.vet/swagger/v1/swagger.json --generator-name typescript-fetch --additional-properties=typescriptThreePlus=true -o src/api",
+    "generate:api": "openapi-generator-cli generate -i http://localhost:8484/swagger/v1/swagger.json --generator-name typescript-fetch --additional-properties=typescriptThreePlus=true -o src/api",
     "generate:cert": "mkcert -key-file ./.cert/key.pem -cert-file ./.cert/cert.pem 'dev.toi.vet'",
     "audit:fix": "npx yarn-audit-fix",
     "check:updates": "npx npm-check-updates"

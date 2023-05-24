@@ -24,85 +24,97 @@ export interface StockPrice {
      * @type {number}
      * @memberof StockPrice
      */
-    price?: number;
+    price?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    readonly priceConverted?: number;
+    readonly priceConverted?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    priceChange?: number;
+    priceChange?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    readonly priceChangeConverted?: number;
+    readonly priceChangeConverted?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    percentageChange?: number;
+    percentageChange?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    volume?: number;
+    volume?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    dayHigh?: number;
+    dayHigh?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    readonly dayHighConverted?: number;
+    readonly dayHighConverted?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    dayLow?: number;
+    dayLow?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    readonly dayLowConverted?: number;
+    readonly dayLowConverted?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    previousClosePrice?: number;
+    previousClosePrice?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    readonly previousClosePriceConverted?: number;
+    closePrice?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    openPrice?: number;
+    readonly closePriceConvered?: number | null;
     /**
      * 
      * @type {number}
      * @memberof StockPrice
      */
-    readonly openPriceConverted?: number;
+    readonly previousClosePriceConverted?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof StockPrice
+     */
+    openPrice?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof StockPrice
+     */
+    readonly openPriceConverted?: number | null;
     /**
      * 
      * @type {string}
@@ -156,6 +168,8 @@ export function StockPriceFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'dayLow': !exists(json, 'dayLow') ? undefined : json['dayLow'],
         'dayLowConverted': !exists(json, 'dayLowConverted') ? undefined : json['dayLowConverted'],
         'previousClosePrice': !exists(json, 'previousClosePrice') ? undefined : json['previousClosePrice'],
+        'closePrice': !exists(json, 'closePrice') ? undefined : json['closePrice'],
+        'closePriceConvered': !exists(json, 'closePriceConvered') ? undefined : json['closePriceConvered'],
         'previousClosePriceConverted': !exists(json, 'previousClosePriceConverted') ? undefined : json['previousClosePriceConverted'],
         'openPrice': !exists(json, 'openPrice') ? undefined : json['openPrice'],
         'openPriceConverted': !exists(json, 'openPriceConverted') ? undefined : json['openPriceConverted'],
@@ -183,6 +197,7 @@ export function StockPriceToJSON(value?: StockPrice | null): any {
         'dayHigh': value.dayHigh,
         'dayLow': value.dayLow,
         'previousClosePrice': value.previousClosePrice,
+        'closePrice': value.closePrice,
         'openPrice': value.openPrice,
         'exchangeName': value.exchangeName,
         'market': value.market,

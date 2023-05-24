@@ -1,9 +1,9 @@
 export function formatNumber(
-  value?: number,
+  value: number | null | undefined,
   minimumFractionDigits?: number,
   maximumFractionDigits?: number
 ): string {
-  if (value === undefined) return "";
+  if (value === undefined || value === null) return "";
   return value.toLocaleString(undefined, {
     minimumFractionDigits: minimumFractionDigits ?? 2,
     maximumFractionDigits: maximumFractionDigits ?? 2,
