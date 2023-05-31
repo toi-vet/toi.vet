@@ -9,7 +9,7 @@ export interface IStockDetailsProps {
 export function StockDetailsComponent({ stockPrice }: IStockDetailsProps) {
   return stockPrice ? (
     <div id="stock-details">
-      {stockPrice.marketState !== "closed" ? (
+      {stockPrice.dayLow && stockPrice.dayHigh && stockPrice.volume ? (
         <ul>
           <li>low: {formatNumber(stockPrice.dayLow)} CAD</li>
           <li>high: {formatNumber(stockPrice.dayHigh)} CAD</li>
@@ -19,10 +19,6 @@ export function StockDetailsComponent({ stockPrice }: IStockDetailsProps) {
         <></>
       )}
       <ul>
-        <li>
-          market:{" "}
-          {stockPrice.marketState?.toLowerCase().replace("regular", "open")}
-        </li>
         {stockPrice.openPrice ? (
           <li>open: {stockPrice.openPrice} CAD</li>
         ) : (
