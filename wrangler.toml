@@ -2,7 +2,7 @@ name = "toi-vet"
 account_id = "b4e69cf20047b9ef21fb837fb53ebae3"
 workers_dev = false
 route = "toi.vet/*"
-main = "workers-site/index.js"
+main = "workers-site"
 
 [site]
 bucket = "build"
