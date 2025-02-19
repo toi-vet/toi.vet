@@ -2,4 +2,5 @@ name = "toi-vet"
 account_id = "b4e69cf20047b9ef21fb837fb53ebae3"
 workers_dev = false
 route = "toi.vet/*"
+compatibility_date = "2025-02-19"
 assets = { directory = "build" }
